@@ -1,40 +1,32 @@
-import os
 import sys
+from sources import *
+from outputs import *
 
-class DirBased(object):
-  def __init__(self, path):
-    self.mp3s = []
-    for parts in os.walk(path):
-      (dirpath, dirnames, filenames) = parts
-      for f in filenames:
-        (_, ext) = os.path.splitext(f)
-        if ext.lower() == ".mp3":
-          path = os.path.join(dirpath, f)
-          self.mp3s.append((path, os.path.getmtime(path)))
-  def iterator(self):
-    return self.mp3s.__iter__()
+class FillMyPod(object):
+  def __init__(self):
+    self.__inputs = []
+    self.__outputs = []
+  def addInput(self, source):
+    self.__inputs.append(source)
+  def addOutput(self, output):
+    self.__outputs.append(output)
+  def __roundRobin(self):
+    iterators = map(lambda itty: itty.iterator(), self.__inputs)
+    while len(iterators) > 0:
+      for itty in iterators:
+        try:
+          yield itty.next()
+        except StopIteration:
+          iterators.remove(itty)
+  def run(self):
+    for output in self.__outputs:
+      [mp3 for mp3 in output.output(self.__roundRobin())]
 
-class Random(object):
-  def __init__(self, path):
-    self.__dir = DirBased(path)
-    import random
-    random.shuffle(self.__dir.mp3s)
-  def iterator(self):
-    return self.__dir.iterator()
-
-class Chronological(object):
-  def __init__(self, path):
-    self.__dir = DirBased(path)
-    self.__dir.mp3s.sort(key=lambda mp3:mp3[1])
-  def iterator(self):
-    return self.__dir.iterator()
-
-if len(sys.argv) < 2:
-  print "No path. e.g. python fillmypod.py /path/to/mp3s"
+if len(sys.argv) < 3:
+  print "No path. e.g. python fillmypod.py /path/to/mp3s /path/to/move/to"
   sys.exit(1)
 
-for filename in Random(sys.argv[1]).iterator():
-  print filename
-
-for filename in Chronological(sys.argv[1]).iterator():
-  print filename
+fmp = FillMyPod()
+fmp.addInput(Chronological(sys.argv[1]))
+fmp.addOutput(Chain([Printer(), Move(sys.argv[2]), Number()]))
+fmp.run()
