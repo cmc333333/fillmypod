@@ -1,4 +1,5 @@
 import sys
+import random
 from sources import *
 from outputs import *
 
@@ -13,6 +14,7 @@ class FillMyPod(object):
   def __roundRobin(self):
     iterators = map(lambda itty: itty.iterator(), self.__inputs)
     while len(iterators) > 0:
+      random.shuffle(iterators)
       for itty in iterators:
         try:
           yield itty.next()
@@ -20,13 +22,11 @@ class FillMyPod(object):
           iterators.remove(itty)
   def run(self):
     for output in self.__outputs:
-      [mp3 for mp3 in output.output(self.__roundRobin())]
+      iter([mp3 for mp3 in output.output(self.__roundRobin())])
 
-if len(sys.argv) < 3:
-  print "No path. e.g. python fillmypod.py /path/to/mp3s /path/to/move/to"
-  sys.exit(1)
-
+""" Example Usage
 fmp = FillMyPod()
 fmp.addInput(Chronological(sys.argv[1]))
 fmp.addOutput(Chain([Printer(), Move(sys.argv[2]), Number()]))
 fmp.run()
+"""
