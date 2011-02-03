@@ -4,12 +4,14 @@ import shutil
 from mp3 import *
 
 class Printer(object):
+  """This output simply prints the full path of each file it receives."""
   def output(self, iterator):
     for mp3 in iterator:
       print mp3.path
       yield mp3
 
 class Chain(object):
+  """This output takes the results of one output and feeds it to another (think Unix Pipes)"""
   def __init__(self, elements = []):
     self.__elements = elements
   def addElement(self, element):
@@ -21,6 +23,7 @@ class Chain(object):
     return mp3s
 
 class Move(object):
+  """Each file that this receives will be moved from its current location to the output directory."""
   def __init__(self, outputDir):
     self.__dir = outputDir
   def output(self, iterator):
@@ -31,6 +34,7 @@ class Move(object):
     return map(mvFile, iterator)
 
 class Copy(object):
+  """Each file that this receives will be copied to the output directory."""
   def __init__(self, outputDir):
     self.__dir = outputDir
   def output(self, iterator):
@@ -41,6 +45,7 @@ class Copy(object):
     return map(mvFile, iterator)
 
 class Limit(object):
+  """Taking a limiting number as its parameter, this output will allow through only the first X files."""
   def __init__(self, limit):
     self.__limit = limit
   def output(self, iterator):
@@ -53,6 +58,7 @@ class Limit(object):
         break
 
 class Number(object):
+  """This output renames the files it is given to use a zero-padded index (e.g. 001.mp3, 002.mp3, etc.)."""
   def output(self, iterator):
     def mvFile(soFar, mp3):
       index = str(len(soFar) + 1).zfill(3)

@@ -16,6 +16,7 @@ class DirBased(object):
     return self.mp3s.__iter__()
 
 class Random(object):
+  """All mp3s in the specified directory (or sub-directories of said directory) will be returned in a random order."""
   def __init__(self, path):
     self.__dir = DirBased(path)
     import random
@@ -24,6 +25,8 @@ class Random(object):
     return self.__dir.iterator()
 
 class Chronological(object):
+  """All mp3s in the specified directory (or sub-directories of said directory) will be returned in chronological order (by
+  modification time)."""
   def __init__(self, path):
     self.__dir = DirBased(path)
     self.__dir.mp3s.sort(key=lambda mp3:mp3.mtime)
