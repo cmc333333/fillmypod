@@ -55,8 +55,8 @@ class Limit(object):
 class Number(object):
   def output(self, iterator):
     def mvFile(soFar, mp3):
-      index = len(soFar) + 1
-      newPath = os.path.join(mp3.dirname, str(index) + ".mp3")
+      index = str(len(soFar) + 1).zfill(3)
+      newPath = os.path.join(mp3.dirname, index + ".mp3")
       os.rename(mp3.path, newPath)
       soFar.append(Mp3(newPath))
       return soFar
