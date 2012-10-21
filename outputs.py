@@ -1,5 +1,6 @@
 import os
 import shutil
+from subprocess import Popen, PIPE
 
 from mp3 import *
 
@@ -67,3 +68,13 @@ class Number(object):
       soFar.append(Mp3(newPath))
       return soFar
     return reduce(mvFile, iterator, [])
+
+class Run(object):
+  """Run a command on each file. Use $FMPFile as the path to the mp3"""
+  def __init__(self, cmdString):
+    self.__cmdString = cmdString
+  def output(self, iterator):
+    while True:
+      mp3 = iterator.next()
+      Popen([self.__cmdString], env={"FMPFile": mp3.path}, stdout=PIPE, shell=True).wait()
+      yield mp3
