@@ -1,19 +1,9 @@
-import FillMyPod.Source (Source(Dir), OrderedSource(RandomlyOrdered), ordered)
+import FillMyPod.Source (Source(Dir), OrderedSource(RandomlyOrdered))
+import FillMyPod.Selector (Selector(RandomRoundRobin), selectFrom)
 
-data Selector = 
-  RandomRoundRobin [OrderedSource]
-
-{-
-oneRound :: [[t]] -> IO ([t], [[t]])
-oneRound lst =
-  let orderedM = randomize lst  :: IO [[t]]
-      splitM = fmap (\l -> (take 1 l, drop 1 l)) orderedM  :: IO[([t], [t])]
-
-selectFrom :: Selector -> IO [FilePath]
-selectFrom (RandomRoundRobin sources) =
-  let randomOrder = randomize sources :: IO [OrderedSource]
--}
+inputs :: [OrderedSource]
+inputs = [RandomlyOrdered (Dir "/tmp"), RandomlyOrdered (Dir "/home/cmc")]
 
 main :: IO()
-main = do result <- ordered (RandomlyOrdered (Dir "/tmp"))
-          mapM_ putStrLn result
+main = do ordered <- selectFrom (RandomRoundRobin inputs)
+          mapM_ putStrLn ordered

@@ -24,5 +24,3 @@ randomizeWithIndex lst idx =
   let (h, t) = chooseEl lst idx
       randomTail = randomize t
   in fmap ((:) h) randomTail
-
-
