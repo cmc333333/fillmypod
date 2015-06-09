@@ -4,6 +4,7 @@ module FillMyPod.Selector
 )
 where
 
+import Control.Applicative ((<$>))
 import Control.Monad (join)
 
 import FillMyPod.Random(randomize)
@@ -29,12 +30,8 @@ combineInIO (heads, tails) =
 recursiveRounds :: [[t]] -> IO [t]
 recursiveRounds [] = return []
 recursiveRounds lst =
-  let orderedM = randomize lst
-      combined = fmap (combineInIO . takeHeads) orderedM
-  in join combined
+  join (combineInIO . takeHeads <$> randomize lst)
 
 selectFrom :: Selector -> IO [FilePath]
-selectFrom (RandomRoundRobin sources) =
-  let sorted = map ordered sources
-      seqM = sequence sorted
-  in join (fmap recursiveRounds seqM)
+selectFrom (RandomRoundRobin sources) = join (recursiveRounds <$> ordSources)
+  where ordSources = mapM ordered sources
