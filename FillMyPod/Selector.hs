@@ -15,17 +15,11 @@ data Selector =
   RandomRoundRobin [OrderedSource]
 
 takeHeads :: [[t]] -> ([t], [[t]])
-takeHeads lst =
-  let heads = map (take 1) lst
-      flattenedHeads = concat heads
-      tails = map (drop 1) lst
-      remainingTails = filter (not . null) tails
-  in (flattenedHeads, remainingTails)
+takeHeads lst = (concat heads, filter (not . null) tails)
+  where (heads, tails) = unzip (map (splitAt 1) lst)
 
 combineInIO :: ([t], [[t]]) -> IO [t]
-combineInIO (heads, tails) =
-  let tailM = recursiveRounds tails
-  in fmap (heads ++) tailM
+combineInIO (heads, tails) = (heads ++) <$> recursiveRounds tails
 
 recursiveRounds :: [[t]] -> IO [t]
 recursiveRounds [] = return []

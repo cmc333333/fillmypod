@@ -2,6 +2,7 @@ module FillMyPod.Output
 (limit, printer, move, number, runCmd)
 where
 
+import Control.Applicative ((<$>))
 import System.Cmd (system)
 import System.Directory (renameFile)
 import System.FilePath (replaceBaseName, replaceDirectory)
@@ -16,24 +17,21 @@ printer fpM = do fp <- fpM
                  mapM_ putStrLn fp
                  return fp
 
+replaceFiles :: ([FilePath] -> [(FilePath, FilePath)]) -> IO [FilePath] -> IO [FilePath]
+replaceFiles zipWithReplacement fpM =
+  do pairs <- zipWithReplacement <$> fpM
+     mapM_ (uncurry renameFile) pairs
+     return (map snd pairs)
+
 move :: FilePath -> IO [FilePath] -> IO [FilePath]
-move dest fpM = 
-  let replacement = flip replaceDirectory dest
-      zipWReplacement fps = zip fps (map replacement fps)
-      pairsM = fmap zipWReplacement fpM
-  in do pairs <- pairsM
-        mapM_ (uncurry renameFile) pairs
-        return (map snd pairs)
+move dest = replaceFiles zipWReplacement
+  where zipWReplacement fps = zip fps (map replacement fps)
+        replacement = flip replaceDirectory dest
 
 number :: IO [FilePath] -> IO [FilePath]
-number fpM =
-  let zeroPad = printf "%03d" :: Int -> String
-      indexes = map zeroPad [1..]
-      withIdxM = fmap (`zip` indexes) fpM
-      pairsM = fmap (map (\(f,n) -> (f, replaceBaseName f n))) withIdxM
-  in do pairs <- pairsM
-        mapM_ (uncurry renameFile) pairs
-        return (map snd pairs)
+number = replaceFiles zipWReplacement
+  where indexes = map (printf "%03d" :: Int -> String) [1..]
+        zipWReplacement fps = zip fps (zipWith replaceBaseName fps indexes)
 
 runCmd :: String -> IO [FilePath] -> IO [FilePath]
 runCmd cmd fpM = do fp <- fpM
