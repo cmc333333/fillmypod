@@ -1,9 +1,13 @@
-import FillMyPod.Source (Source(Dir), OrderedSource(RandomlyOrdered))
 import FillMyPod.Selector (Selector(RandomRoundRobin), selectFrom)
+import FillMyPod.Source (Source(Dir), OrderedSource(RandomlyOrdered))
+import FillMyPod.Output (limit, printer, number, move)
 
 inputs :: [OrderedSource]
 inputs = [RandomlyOrdered (Dir "/tmp"), RandomlyOrdered (Dir "/home/cmc")]
 
+output :: IO [FilePath]
+output = (printer . number . (move "/ttt") . printer . (limit 10)) (selectFrom (RandomRoundRobin inputs))
+
 main :: IO()
-main = do ordered <- selectFrom (RandomRoundRobin inputs)
-          mapM_ putStrLn ordered
+main = do output
+          return ()

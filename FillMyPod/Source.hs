@@ -41,5 +41,7 @@ contentsPathsM :: FilePath -> IO [FilePath]
 contentsPathsM path =
   let contentsM = getDirectoryContents path
       addPrefix = combine path
-  in fmap (map addPrefix) contentsM
+      isDots = flip elem [".", ".."]
+      pathsM = fmap (filter (not . isDots)) contentsM
+  in fmap (map addPrefix) pathsM
 
