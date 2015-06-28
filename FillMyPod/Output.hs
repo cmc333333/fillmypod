@@ -1,11 +1,11 @@
 module FillMyPod.Output
-(limit, printer, move, number, runCmd)
+(limit, printer, move, number, runCmd, filterByExt)
 where
 
 import Control.Applicative ((<$>))
 import System.Cmd (system)
 import System.Directory (renameFile)
-import System.FilePath (replaceBaseName, replaceDirectory)
+import System.FilePath (replaceBaseName, replaceDirectory, takeExtension)
 import Text.Printf (printf)
 
 
@@ -16,6 +16,11 @@ printer :: IO [FilePath] -> IO [FilePath]
 printer fpM = do fp <- fpM
                  mapM_ putStrLn fp
                  return fp
+
+filterByExt :: String -> IO [FilePath] -> IO [FilePath]
+filterByExt ext = fmap (filter hasExt)
+  where hasExt = (dotExt ==) . takeExtension
+        dotExt = "." ++ ext
 
 replaceFiles :: ([FilePath] -> [(FilePath, FilePath)]) -> IO [FilePath] -> IO [FilePath]
 replaceFiles zipWithReplacement fpM =
